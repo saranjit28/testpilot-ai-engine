@@ -21,12 +21,11 @@ public class RepoListTest {
                         + projectEncoded
                         + "/_git/govgrants-ospi-automation";
 
-//        https://teamservices.reisystems.com/tfs/SaaS/GovGrants%20Automation/_git/govgrants-ospi-automation?path=%2Fsrc%2Ftest%2Fjava%2Fcom%2Fautomation%2Fospi%2Fsteps%2FGenericStep.java&version=GBmaster&_a=contents
 
         System.out.println("Calling: " + url);
 
         String response =
-                AzureDevOpsRestClient.get(url, AzureDevOpsConfig.PAT);
+                AzureDevOpsRestClient.get(url);
 
         System.out.println(response);
     }

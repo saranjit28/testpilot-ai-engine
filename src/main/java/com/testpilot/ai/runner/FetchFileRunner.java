@@ -8,10 +8,10 @@ public class FetchFileRunner {
 
         String fileUrl =
                 "https://teamservices.reisystems.com/tfs/SaaS/GovGrants%20Automation"
-                        + "/_apis/git/repositories/19d1f9ad-2649-4e42-b358-f69cc93bf20e/items"
-                        + "?path=/src/test/java/com/automation/ospi/steps/GenericStep.java"
-                        + "&versionDescriptor.version=master"
-                        + "&includeContent=true";
+                + "/_apis/git/repositories/19d1f9ad-2649-4e42-b358-f69cc93bf20e/items"
+                + "?path=/src/test/java/com/automation/ospi/steps/GenericStep.java";
+//                + "&versionDescriptor.version=master"
+//                + "&includeContent=true";
 //                        + "&api-version=7.0";
 
         System.out.println("FETCHING JAVA FILE CONTENT...");
