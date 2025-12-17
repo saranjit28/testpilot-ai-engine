@@ -1,23 +1,79 @@
-Backend stack (Java 17 + Spring Boot + Maven)
+# TestPilot AI Engine – Technology Stack
 
-Azure DevOps REST integration (PAT-based)
+---
 
-AI & RAG concepts (high level, safe for internal sharing)
+## 🧩 Core Language & Build
 
-Storage strategy (Phase 1 & Phase 2)
+- Java 17
+- Maven
+- Git (Azure DevOps)
 
-Portal stack
+---
 
-Dev tools
+## ☁️ Source Control Integration
 
-Security principles
+- Azure DevOps (TFS)
+- Azure DevOps REST APIs
+    - Repositories
+    - Items API
+    - Blobs API
 
-Future roadmap
+---
 
-This is architecture-review safe and suitable for:
+## 🧪 Automation Ecosystem (Target Projects)
 
-Managers
+- Selenium WebDriver
+- Cucumber (BDD)
+- TestNG / JUnit
+- REST Assured
 
-Architects
+---
 
-Security teams
+## 🤖 AI & Intelligence Layer
+
+- Prompt Engineering
+- Retrieval-Augmented Generation (RAG)
+- Vector indexing (future)
+- LLM integration (OpenAI / Azure OpenAI – configurable)
+
+---
+
+## 🌐 Backend & APIs
+
+- Java HTTP Client
+- REST-based architecture
+- JSON processing (org.json / Jackson)
+
+---
+
+## 🖥️ Frontend (Future Phase)
+
+- Web Portal (React / Angular – TBD)
+- IntelliJ Plugin (Future)
+- VS Code Plugin (Future)
+
+---
+
+## 🔐 Security
+
+- Azure DevOps PAT Authentication
+- Environment-based secrets
+- No hardcoded credentials
+
+---
+
+## 📦 Dev & Tooling
+
+- IntelliJ IDEA
+- Postman (API testing)
+- Git CLI
+- Maven Surefire
+
+---
+
+## 🧠 Design Principles
+
+- Modular architecture
+- Company-owned IP
+- Framework-agnostic
+- Extensible for multiple projects
