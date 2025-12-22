@@ -1,34 +1,58 @@
 package com.testpilot.ai.runner;
 
 import com.testpilot.ai.azure.AzureDevOpsRestClient;
+import com.testpilot.ai.azure.AzureRepoResolver;
 import com.testpilot.ai.config.AzureDevOpsConfig;
+import com.testpilot.ai.parser.StepDefinitionParser;
+import com.testpilot.ai.model.StepDefinition;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class StepsFileLister {
+
+    // ✅ MULTIPLE STEP LOCATIONS
+    private static final String[] STEP_PATHS = {
+            "/src/test/java/com/automation/ospi/steps",
+            "/src/main/java/com/automation/rei/govgrantsSteps"
+    };
 
     public static void main(String[] args) throws Exception {
 
-        // ✅ LIST FILES
+        List<StepDefinition> allSteps = new ArrayList<>();
+
+        for (String path : STEP_PATHS) {
+            allSteps.addAll(fetchStepsFromPath(path));
+        }
+
+        System.out.println("\nTOTAL STEPS FOUND: " + allSteps.size());
+
+        allSteps.forEach(System.out::println);
+    }
+
+    private static List<StepDefinition> fetchStepsFromPath(
+            String scopePath
+    ) throws Exception {
+
+        List<StepDefinition> steps = new ArrayList<>();
+
         String listUrl =
                 AzureDevOpsConfig.BASE_URL + "/"
                         + AzureDevOpsConfig.COLLECTION + "/"
                         + AzureDevOpsConfig.PROJECT
                         + "/_apis/git/repositories/"
-                        + AzureDevOpsConfig.REPO_ID
+                        + AzureRepoResolver.resolveRepoId(
+                        "govgrants-ospi-automation")
                         + "/items"
-                        + "?scopePath=/src/test/java/com/automation/ospi/steps"
+                        + "?scopePath=" + scopePath
                         + "&recursionLevel=Full"
-                        + "&includeContentMetadata=true"
                         + "&api-version=3.0";
 
-        System.out.println("LIST URL:");
-        System.out.println(listUrl);
-
         String response = AzureDevOpsRestClient.get(listUrl);
-
-        JSONObject json = new JSONObject(response);
-        JSONArray items = json.getJSONArray("value");
+        JSONArray items =
+                new JSONObject(response).getJSONArray("value");
 
         for (int i = 0; i < items.length(); i++) {
 
@@ -36,42 +60,36 @@ public class StepsFileLister {
 
             if (item.optBoolean("isFolder")) continue;
 
-            String path = item.getString("path");
+            String filePath = item.getString("path");
 
-            if (path.endsWith("Steps.java")) {
-                System.out.println("\nFOUND: " + path);
-                fetchAndPrintFile(path);
-            }
+            if (!filePath.endsWith(".java")) continue;
+
+            String fileContent =
+                    AzureDevOpsRestClient.getFileContent(
+                            buildFileUrl(filePath)
+                    );
+
+            steps.addAll(
+                    StepDefinitionParser.parse(
+                            fileContent,
+                            filePath
+                    )
+            );
         }
+
+        return steps;
     }
 
-    private static void fetchAndPrintFile(String filePath) throws Exception {
-
-        String encodedPath = java.net.URLEncoder.encode(
-                filePath,
-                java.nio.charset.StandardCharsets.UTF_8
-        );
-
-        String fileUrl =
-                AzureDevOpsConfig.BASE_URL + "/"
-                        + AzureDevOpsConfig.COLLECTION + "/"
-                        + AzureDevOpsConfig.PROJECT
-                        + "/_apis/git/repositories/"
-                        + AzureDevOpsConfig.REPO_ID
-                        + "/items"
-                        + "?path=" + encodedPath
-                        + "&versionDescriptor.version=master"
-                        + "&$format=text"
-                        + "&api-version=3.0";
-
-        System.out.println("Calling URL:");
-        System.out.println(fileUrl);
-
-        String javaSource = AzureDevOpsRestClient.getFileContent(fileUrl);
-
-        System.out.println("======================================");
-        System.out.println("FILE: " + filePath);
-        System.out.println("======================================");
-        System.out.println(javaSource);
+    private static String buildFileUrl(String filePath) throws Exception {
+        return AzureDevOpsConfig.BASE_URL + "/"
+                + AzureDevOpsConfig.COLLECTION + "/"
+                + AzureDevOpsConfig.PROJECT
+                + "/_apis/git/repositories/"
+                + AzureRepoResolver.resolveRepoId(
+                "govgrants-ospi-automation")
+                + "/items"
+                + "?path=" + filePath
+                + "&$format=text"
+                + "&api-version=3.0";
     }
 }

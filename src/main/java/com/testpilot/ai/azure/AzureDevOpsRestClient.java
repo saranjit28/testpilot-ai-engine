@@ -53,27 +53,23 @@ public class AzureDevOpsRestClient {
      */
     public static String get(String url) throws Exception {
 
-        System.out.println("Calling URL:\n" + url);
-
         URL apiUrl = new URL(url);
         HttpURLConnection conn = (HttpURLConnection) apiUrl.openConnection();
 
         conn.setRequestMethod("GET");
-        conn.setConnectTimeout(15000);
-        conn.setReadTimeout(15000);
+        conn.setConnectTimeout(15000); // 15 sec
+        conn.setReadTimeout(30000);    // 30 sec
 
         String auth = ":" + AzureDevOpsConfig.PAT;
         String encodedAuth = Base64.getEncoder()
                 .encodeToString(auth.getBytes(StandardCharsets.UTF_8));
 
         conn.setRequestProperty("Authorization", "Basic " + encodedAuth);
-        conn.setRequestProperty("Accept", "*/*");
-
-        int status = conn.getResponseCode();
+        conn.setRequestProperty("Accept", "application/json");
 
         BufferedReader reader = new BufferedReader(
                 new InputStreamReader(
-                        status >= 400
+                        conn.getResponseCode() >= 400
                                 ? conn.getErrorStream()
                                 : conn.getInputStream(),
                         StandardCharsets.UTF_8
@@ -83,19 +79,10 @@ public class AzureDevOpsRestClient {
         StringBuilder response = new StringBuilder();
         String line;
         while ((line = reader.readLine()) != null) {
-            response.append(line).append("\n");
-        }
-
-        reader.close();
-
-        if (status >= 400) {
-            throw new RuntimeException(
-                    "Azure DevOps GET failed\n"
-                            + "HTTP Status: " + status + "\n"
-                            + "Response:\n" + response
-            );
+            response.append(line);
         }
 
         return response.toString();
     }
+
 }

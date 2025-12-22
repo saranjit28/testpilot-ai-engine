@@ -73,3 +73,23 @@ testpilot-ai-engine
 3. Build using Maven
 4. Run repository analyzer
 5. Generate Gherkin scenarios
+
+┌──────────────────────────┐
+│ TestPilot AI Portal (UI) │  ← React / Angular
+└──────────┬───────────────┘
+│ REST API
+┌──────────▼───────────────┐
+│ TestPilot AI Backend     │  ← Spring Boot
+│                          │
+│ 1. TestCase Parser       │
+│ 2. Gherkin Generator     │
+│ 3. Step Matcher (AI)     │
+│ 4. Missing Step Finder  │
+│ 5. Java Preview Builder │
+│ 6. Export Engine        │
+└──────────┬───────────────┘
+│
+┌──────────▼───────────────┐
+│ Existing Automation Repo │  ← Azure DevOps
+│ (Steps you already read) │
+└──────────────────────────┘

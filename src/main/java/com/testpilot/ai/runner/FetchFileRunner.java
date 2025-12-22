@@ -12,7 +12,7 @@ public class FetchFileRunner {
                 + "?path=/src/test/java/com/automation/ospi/steps/GenericStep.java";
 //                + "&versionDescriptor.version=master"
 //                + "&includeContent=true";
-//                        + "&api-version=7.0";
+//                        + "&api-version=3.0";
 
         System.out.println("FETCHING JAVA FILE CONTENT...");
         System.out.println("----------------------------------");
