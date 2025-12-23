@@ -1,20 +1,29 @@
 package com.testpilot.ai.controller;
 
-import com.testpilot.ai.engine.TestPilotAIEngine;
-import com.testpilot.ai.model.TestPilotRequest;
+import com.testpilot.ai.dto.AnalyzeRequest;
 import com.testpilot.ai.model.TestPilotResponse;
+import com.testpilot.ai.service.AnalyzeService;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/testpilot")
 public class TestPilotController {
 
-    @PostMapping("/analyze")
-    public TestPilotResponse analyze(
-            @RequestBody TestPilotRequest request) {
+    private final AnalyzeService analyzeService;
 
-        return TestPilotAIEngine.run(
-                request.getManualTestCase()
-        );
+    public TestPilotController(AnalyzeService analyzeService) {
+        this.analyzeService = analyzeService;
+    }
+
+    @PostMapping(
+            value = "/analyze",
+            consumes = "application/json",
+            produces = "application/json"
+    )
+    public TestPilotResponse analyze(
+            @RequestBody AnalyzeRequest request
+    ) {
+        return analyzeService.analyzeManualTestCase(request);
     }
 }
+
