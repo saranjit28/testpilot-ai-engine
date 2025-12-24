@@ -116,4 +116,16 @@ public class StepPersistenceService {
                 .replace("\n", "")
                 .replace("\r", "");
     }
+
+    public void insertMethodBody(
+            String stepFilePath,
+            String methodName,
+            String javaBody) {
+
+        // Find method by name
+        // Replace TODO or empty body
+        // Write file back safely
+    }
+
+
 }

@@ -14,7 +14,23 @@ public class TestPilotResponse {
     private List<String> missingSteps;
     private List<String> errorMessages;
 
-    // ---------- Getters ----------
+    public static TestPilotResponse build(
+            String status,
+            String message,
+            String originalText,
+            List<String> gherkinSteps,
+            List<StepMatcher.StepMatch> matchedSteps,
+            List<String> missingSteps
+    ) {
+        TestPilotResponse res = new TestPilotResponse();
+        res.status = status;
+        res.message = message;
+        res.originalText = originalText;
+        res.gherkinSteps = gherkinSteps;
+        res.matchedSteps = matchedSteps;
+        res.missingSteps = missingSteps;
+        return res;
+    }
 
     public String getStatus() {
         return status;
@@ -72,27 +88,5 @@ public class TestPilotResponse {
 
     public void setErrorMessages(List<String> errorMessages) {
         this.errorMessages = errorMessages;
-    }
-
-    // ---------- Factory Builder (SAFE) ----------
-
-    public static TestPilotResponse build(
-            String status,
-            String message,
-            String originalText,
-            List<String> gherkinSteps,
-            List<StepMatcher.StepMatch> matchedSteps,
-            List<String> missingSteps,
-            List<String> errorMessages
-    ) {
-        TestPilotResponse res = new TestPilotResponse();
-        res.status = status;
-        res.message = message;
-        res.originalText = originalText;
-        res.gherkinSteps = gherkinSteps;
-        res.matchedSteps = matchedSteps;
-        res.missingSteps = missingSteps;
-        res.errorMessages = errorMessages;
-        return res;
     }
 }

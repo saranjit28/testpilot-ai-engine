@@ -2,13 +2,16 @@ package com.testpilot.ai.runner;
 
 import com.testpilot.ai.ai.free.PageObjectStepGenerator;
 import com.testpilot.ai.ai.free.ApiStepGenerator;
+import com.testpilot.ai.azure.AzureRepoResolver;
+import com.testpilot.ai.config.AzureDevOpsConfig;
+import com.testpilot.ai.tfs.AzureWorkspaceResolver;
 
 import java.nio.file.Path;
 import java.util.List;
 
 public class FullAITestRunner {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
 
         List<String> gherkinSteps = List.of(
                 "Then I click login button",
@@ -16,7 +19,7 @@ public class FullAITestRunner {
         );
 
         Path mainJava =
-                Path.of("D:/New Project/OSPI/govgrants-ospi-automation/src/main/java");
+                AzureWorkspaceResolver.getSrcMainJava("govgrants-ospi-automation");
 
         for (String step : gherkinSteps) {
 

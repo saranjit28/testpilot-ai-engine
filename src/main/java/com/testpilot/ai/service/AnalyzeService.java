@@ -1,16 +1,22 @@
 package com.testpilot.ai.service;
 
 import com.testpilot.ai.dto.AnalyzeRequest;
+import com.testpilot.ai.engine.StepMatcher;
+import com.testpilot.ai.ai.store.StepStore;
+import com.testpilot.ai.model.StepDefinition;
 import com.testpilot.ai.model.TestPilotResponse;
 import com.testpilot.ai.util.AiOutputValidator;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class AnalyzeService {
+
+    private static final double MATCH_THRESHOLD = 0.40;
 
     private final AiReasoningService aiReasoningService;
     private final StepPersistenceService stepPersistenceService;
@@ -23,64 +29,60 @@ public class AnalyzeService {
 
     public TestPilotResponse analyzeManualTestCase(AnalyzeRequest request) {
 
-        // -----------------------------------------------------------------
-        // 1️⃣  Clean the generated‑steps folder (once)
-        // -----------------------------------------------------------------
+        // 🔥 Reset generated steps every run
         stepPersistenceService.refreshGeneratedSteps();
 
-        // -----------------------------------------------------------------
-        // 2️⃣  Extract the raw manual step (the API currently sends one line)
-        // -----------------------------------------------------------------
         String manualStep = request.getManualTestCase();
-        List<String> gherkinSteps = Collections.singletonList(manualStep);
+        List<String> gherkinSteps = List.of(manualStep);
 
-        // -----------------------------------------------------------------
-        // 3️⃣  Prepare containers for the response
-        // -----------------------------------------------------------------
-        List<String> missingSteps = new ArrayList<>(); // valid AI‑generated steps
-        List<String> errorMessages = new ArrayList<>(); // strings prefixed with ⚠
+        List<StepMatcher.StepMatch> matchedSteps = new ArrayList<>();
+        List<String> missingSteps = new ArrayList<>();
 
-        // -----------------------------------------------------------------
-        // 4️⃣  If the input already looks like a Gherkin step, we can skip AI.
-        // -----------------------------------------------------------------
-        boolean alreadyGherkin = AiOutputValidator.isValidGherkinStep(manualStep);
-        String aiStep;
-        if (alreadyGherkin) {
-            // Treat the incoming line as a “missing” step that already exists.
-            aiStep = manualStep;
+        // 1️⃣ Load repo steps
+        List<StepDefinition> repoSteps = StepStore.load();
+
+        // 2️⃣ Match against existing steps
+        List<StepMatcher.StepMatch> matches =
+                StepMatcher.findMatches(manualStep, repoSteps);
+
+        Optional<StepMatcher.StepMatch> bestMatch =
+                matches.stream()
+                        .max(Comparator.comparingDouble(StepMatcher.StepMatch::getConfidence));
+
+        // 3️⃣ Decision based on confidence
+        if (bestMatch.isPresent()
+                && bestMatch.get().getConfidence() >= MATCH_THRESHOLD) {
+
+            // ✅ MATCH FOUND — do NOT generate new step
+            matchedSteps.add(bestMatch.get());
+
         } else {
-            // -----------------------------------------
-            // 5️⃣  Ask the AI for a suggestion once
-            // -----------------------------------------
-            aiStep = aiReasoningService.generateMissingStep(manualStep, List.of());
+
+            // ❌ NO GOOD MATCH — generate via AI
+            String aiStep =
+                    aiReasoningService.generateMissingStep(
+                            manualStep,
+                            repoSteps.stream()
+                                    .map(StepDefinition::getStepText)
+                                    .toList()
+                    );
+
+            if (AiOutputValidator.isValidGherkinStep(aiStep)) {
+                missingSteps.add(aiStep);
+                stepPersistenceService.persistSteps(List.of(aiStep));
+            } else {
+                missingSteps.add("⚠ AI suggestion rejected (invalid format)");
+            }
         }
 
-        // -----------------------------------------------------------------
-        // 6️⃣  Validate the AI (or bypass) result **once**
-        // -----------------------------------------------------------------
-        boolean isValid = AiOutputValidator.isValidGherkinStep(aiStep);
-
-        if (isValid) {
-            missingSteps.add(aiStep);                     // ← only ONE entry
-            // Persist the newly generated step (if it does not already exist)
-            stepPersistenceService.persistSteps(List.of(aiStep));
-        } else {
-            errorMessages.add("⚠ AI failed to generate valid step for: " + manualStep);
-        }
-
-        // -----------------------------------------------------------------
-        // 7️⃣  Build the response – note we keep both collections
-        // -----------------------------------------------------------------
+        // 4️⃣ Build response
         return TestPilotResponse.build(
                 "ANALYZED",
                 "Manual test case analyzed successfully",
                 manualStep,
                 gherkinSteps,
-                List.of(),
-                missingSteps,
-                errorMessages
+                matchedSteps,
+                missingSteps
         );
-
-
     }
 }
