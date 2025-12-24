@@ -27,4 +27,8 @@ public class AiReasoningService {
 
         return ollamaClient.generate(prompt);
     }
+
+    public String generate(String prompt) {
+        return prompt;
+    }
 }

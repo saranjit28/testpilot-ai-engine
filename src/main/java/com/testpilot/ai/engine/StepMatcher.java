@@ -10,7 +10,7 @@ import static com.testpilot.ai.engine.StepSimilarityUtil.similarity;
 
 public class StepMatcher {
 
-    private static final double CONFIDENCE_THRESHOLD = 0.70;
+    private static final double CONFIDENCE_THRESHOLD = 0.40;
 
     public static List<StepMatch> findMatches(
             String gherkinStep,

@@ -1,6 +1,9 @@
 package com.testpilot.ai.ai.store;
 
+import com.testpilot.ai.azure.AzureRepoResolver;
+import com.testpilot.ai.config.AzureDevOpsConfig;
 import com.testpilot.ai.model.StepDefinition;
+import com.testpilot.ai.tfs.AzureWorkspaceResolver;
 
 import java.io.IOException;
 import java.nio.file.*;
@@ -16,8 +19,8 @@ public class StepStore {
 
     // 🔥 SCAN MULTIPLE STEP LOCATIONS
     private static final List<Path> STEP_DIRECTORIES = List.of(
-            Paths.get("D:/New Project/OSPI/govgrants-ospi-automation/src/main/java/com/automation/rei/govgrantsSteps"),
-            Paths.get("src/main/java") // fallback for TestPilot repo itself
+            AzureWorkspaceResolver.getSrcMainJava("govgrants-ospi-automation")
+                    .resolve("com/automation/rei/govgrantsSteps"),Paths.get("src/main/java")
     );
 
     public static List<StepDefinition> load() {

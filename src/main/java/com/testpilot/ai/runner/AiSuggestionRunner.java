@@ -22,7 +22,7 @@ public class AiSuggestionRunner {
 
         if (matches.isEmpty()) {
 
-            System.out.println("\n❌ No match ≥ 70%");
+            System.out.println("\n❌ No match ≥ 40%");
             System.out.println("AI must generate new step.");
 
         } else {

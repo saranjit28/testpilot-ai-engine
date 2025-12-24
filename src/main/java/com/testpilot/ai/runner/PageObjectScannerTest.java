@@ -1,6 +1,9 @@
 package com.testpilot.ai.runner;
 
 import com.testpilot.ai.ai.analyzer.PageObjectScanner;
+import com.testpilot.ai.azure.AzureRepoResolver;
+import com.testpilot.ai.config.AzureDevOpsConfig;
+import com.testpilot.ai.tfs.AzureWorkspaceResolver;
 
 import java.nio.file.Path;
 import java.util.Map;
