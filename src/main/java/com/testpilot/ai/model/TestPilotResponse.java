@@ -1,92 +1,91 @@
 package com.testpilot.ai.model;
 
-import com.testpilot.ai.engine.StepMatcher;
+import com.testpilot.ai.output.view.GenerateView;
+import com.testpilot.ai.output.view.ReuseView;
+import com.testpilot.ai.output.view.SummaryView;
+
 import java.util.List;
 
 public class TestPilotResponse {
 
-    private String status;
-    private String message;
-    private String originalText;
+    private final String requestId;
+    private final String testName;
+    private final String status;
+    private final SummaryView summary;
+    private final List<ReuseView> reusedSteps;
+    private final List<GenerateView> generatedSteps;
+    private final List<String> messages;
 
-    private List<String> gherkinSteps;
-    private List<StepMatcher.StepMatch> matchedSteps;
-    private List<String> missingSteps;
-    private List<String> errorMessages;
+    private TestPilotResponse(
+            String requestId,
+            String testName,
+            String status,
+            SummaryView summary,
+            List<ReuseView> reusedSteps,
+            List<GenerateView> generatedSteps,
+            List<String> messages
+    ) {
+        this.requestId = requestId;
+        this.testName = testName;
+        this.status = status;
+        this.summary = summary;
+        this.reusedSteps = reusedSteps;
+        this.generatedSteps = generatedSteps;
+        this.messages = messages;
+    }
 
     public static TestPilotResponse build(
+            String requestId,
+            String testName,
             String status,
-            String message,
-            String originalText,
-            List<String> gherkinSteps,
-            List<StepMatcher.StepMatch> matchedSteps,
-            List<String> missingSteps
+            List<ReuseView> reusedSteps,
+            List<GenerateView> generatedSteps,
+            List<String> messages
     ) {
-        TestPilotResponse res = new TestPilotResponse();
-        res.status = status;
-        res.message = message;
-        res.originalText = originalText;
-        res.gherkinSteps = gherkinSteps;
-        res.matchedSteps = matchedSteps;
-        res.missingSteps = missingSteps;
-        return res;
+
+        SummaryView summary =
+                new SummaryView(
+                        reusedSteps.size() + generatedSteps.size(),
+                        reusedSteps.size(),
+                        generatedSteps.size()
+                );
+
+        return new TestPilotResponse(
+                requestId,
+                testName,
+                status,
+                summary,
+                reusedSteps,
+                generatedSteps,
+                messages
+        );
+    }
+
+    public String getRequestId() {
+        return requestId;
+    }
+
+    public String getTestName() {
+        return testName;
     }
 
     public String getStatus() {
         return status;
     }
 
-    public String getMessage() {
-        return message;
+    public SummaryView getSummary() {
+        return summary;
     }
 
-    public String getOriginalText() {
-        return originalText;
+    public List<ReuseView> getReusedSteps() {
+        return reusedSteps;
     }
 
-    public List<String> getGherkinSteps() {
-        return gherkinSteps;
+    public List<GenerateView> getGeneratedSteps() {
+        return generatedSteps;
     }
 
-    public List<StepMatcher.StepMatch> getMatchedSteps() {
-        return matchedSteps;
-    }
-
-    public List<String> getMissingSteps() {
-        return missingSteps;
-    }
-
-    public List<String> getErrorMessages() {
-        return errorMessages;
-    }
-
-    // ---------- Setters ----------
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
-    }
-
-    public void setOriginalText(String originalText) {
-        this.originalText = originalText;
-    }
-
-    public void setGherkinSteps(List<String> gherkinSteps) {
-        this.gherkinSteps = gherkinSteps;
-    }
-
-    public void setMatchedSteps(List<StepMatcher.StepMatch> matchedSteps) {
-        this.matchedSteps = matchedSteps;
-    }
-
-    public void setMissingSteps(List<String> missingSteps) {
-        this.missingSteps = missingSteps;
-    }
-
-    public void setErrorMessages(List<String> errorMessages) {
-        this.errorMessages = errorMessages;
+    public List<String> getMessages() {
+        return messages;
     }
 }
