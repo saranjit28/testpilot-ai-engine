@@ -1,37 +1,52 @@
 package com.testpilot.ai.model;
 
+import java.nio.file.Path;
+import java.util.Set;
+
 public class StepDefinition {
 
-    private String fileName;
-    private String keyword;
-    private String stepText;
+    private final String stepText;
+    private final String matchText;
+    private final String filePath;
+    private final String methodName;
+    private final Set<String> keywords;
 
-    public String getFileName() {
-        return fileName;
-    }
-
-    public String getKeyword() {
-        return keyword;
+    public StepDefinition(
+            String stepText,
+            String matchText,
+            String filePath,
+            String methodName,
+            Set<String> keywords
+    ) {
+        this.stepText = stepText;
+        this.matchText = matchText;
+        this.filePath = filePath;
+        this.methodName = methodName;
+        this.keywords = keywords;
     }
 
     public String getStepText() {
         return stepText;
     }
 
-    public void setFileName(String fileName) {
-        this.fileName = fileName;
+    public String getMatchText() {
+        return matchText;
     }
 
-    public void setKeyword(String keyword) {
-        this.keyword = keyword;
+    public String getFilePath() {
+        return filePath;
     }
 
-    public void setStepText(String stepText) {
-        this.stepText = stepText;
+    public String getMethodName() {
+        return methodName;
     }
 
-    @Override
-    public String toString() {
-        return keyword + " " + stepText + " [" + fileName + "]";
+    public Set<String> getKeywords() {
+        return keywords;
+    }
+
+    // derived, not stored
+    public String getFileName() {
+        return Path.of(filePath).getFileName().toString();
     }
 }

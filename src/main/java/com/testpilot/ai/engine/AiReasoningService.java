@@ -1,5 +1,5 @@
 package com.testpilot.ai.engine;
-import com.testpilot.ai.ai.OllamaClient;
+import com.testpilot.ai.OllamaClient;
 
 import java.util.List;
 

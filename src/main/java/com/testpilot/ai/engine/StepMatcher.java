@@ -2,11 +2,7 @@ package com.testpilot.ai.engine;
 
 import com.testpilot.ai.model.StepDefinition;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-
-import static com.testpilot.ai.engine.StepSimilarityUtil.similarity;
+import java.util.*;
 
 public class StepMatcher {
 
@@ -19,15 +15,23 @@ public class StepMatcher {
 
         List<StepMatch> matches = new ArrayList<>();
 
-        String normalizedInput = normalize(gherkinStep);
+        if (gherkinStep == null || repoSteps == null) {
+            return matches;
+        }
+
+        String normalizedInput = normalizeInput(gherkinStep);
 
         for (StepDefinition step : repoSteps) {
 
-            String normalizedRepoStep =
-                    normalize(step.getStepText());
+            if (step.getMatchText() == null || step.getMatchText().isBlank()) {
+                continue;
+            }
 
             double score =
-                    similarity(normalizedInput, normalizedRepoStep);
+                    StepSimilarityUtil.similarity(
+                            normalizedInput,
+                            step.getMatchText()
+                    );
 
             if (score >= CONFIDENCE_THRESHOLD) {
                 matches.add(new StepMatch(step, score));
@@ -42,11 +46,10 @@ public class StepMatcher {
         return matches;
     }
 
-    // 🔥 NORMALIZATION (VERY IMPORTANT)
-    private static String normalize(String step) {
-        return step
-                .replaceAll("\"[^\"]*\"", "{string}") // quoted text
-                .replaceAll("\\d+", "{string}")       // numbers
+    private static String normalizeInput(String input) {
+        return input
+                .replaceAll("\"[^\"]*\"", "{string}")
+                .replaceAll("\\d+", "{string}")
                 .replaceAll("\\s+", " ")
                 .trim()
                 .toLowerCase();

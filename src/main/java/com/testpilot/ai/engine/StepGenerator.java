@@ -1,19 +1,17 @@
 package com.testpilot.ai.engine;
 
-import com.testpilot.ai.ai.store.StepStore;
 import com.testpilot.ai.model.StepDefinition;
-
-import java.util.List;
+import com.testpilot.ai.store.StepStore;
 
 public class StepGenerator {
 
-    public static void generate(String gherkinStep) {
+    private final StepStore stepStore;
 
-        List<StepDefinition> repoSteps =
-                StepStore.load();
+    public StepGenerator(StepStore stepStore) {
+        this.stepStore = stepStore;
+    }
 
-        System.out.println("\n🤖 CLAUDE GENERATED JAVA STEP:");
-        System.out.println("--------------------------------");
-        System.out.println("--------------------------------");
+    public void generate(StepDefinition step) {
+        stepStore.add(step);
     }
 }
