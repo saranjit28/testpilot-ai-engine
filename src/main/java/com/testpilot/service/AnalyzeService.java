@@ -1,94 +1,87 @@
 package com.testpilot.service;
 
-import com.testpilot.ai.decision.MatchResult;
-import com.testpilot.ai.decision.StepDecisionEngine;
-import com.testpilot.ai.engine.KeywordExtractor;
-import com.testpilot.ai.index.KeywordIndex;
-import com.testpilot.ai.index.KeywordIndexBuilder;
+import com.testpilot.ai.engine.DecisionResult;
+import com.testpilot.ai.engine.MatchResult;
+import com.testpilot.ai.engine.StepDecisionEngine;
 import com.testpilot.ai.model.StepDefinition;
-import com.testpilot.ai.model.TestPilotResponse;
 import com.testpilot.ai.output.view.GenerateView;
 import com.testpilot.ai.output.view.ReuseView;
 import com.testpilot.ai.store.StepStore;
+import com.testpilot.ai.model.TestPilotResponse;
 import com.testpilot.dto.AnalyzeRequest;
+import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
+import java.util.stream.Collectors;
 
+@Service
 public class AnalyzeService {
 
-    private final StepStore stepStore = new StepStore();
+    private final StepStore stepStore;
 
-    /**
-     * Main entry point for TestPilot analysis.
-     * Called by controllers.
-     */
+    public AnalyzeService(StepStore stepStore) {
+        this.stepStore = stepStore;
+    }
+
     public TestPilotResponse analyzeManualTestCase(AnalyzeRequest request) {
 
-        // 1️⃣ Fetch all existing repo steps (gherkin + java)
-        List<StepDefinition> repoSteps = stepStore.getAll();
+        List<StepDefinition> repoSteps = stepStore.getAllSteps();
 
-        // 2️⃣ Build keyword index
-        KeywordIndex keywordIndex =
-                KeywordIndexBuilder.build(repoSteps);
+        System.out.println(">>> REPO STEPS COUNT = " + repoSteps.size());
 
-        List<ReuseView> reusedSteps = new ArrayList<>();
-        List<GenerateView> generatedSteps = new ArrayList<>();
-
-        // 3️⃣ Analyze each manual step
-        for (String manualStep : request.getSteps()) {
-
-            Set<String> manualKeywords =
-                    KeywordExtractor.extract(manualStep);
-
-            MatchResult decision =
-                    StepDecisionEngine.decide(
-                            manualStep,
-                            manualKeywords,
-                            keywordIndex
-                    );
-
-            if (decision.isReusable()) {
-
-                StepDefinition step =
-                        decision.getMatchedStep();
-
-                reusedSteps.add(
-                        new ReuseView(
-                                step.getStepText(),
-                                toPercent(decision.getConfidence()),
-                                step.getFilePath(),
-                                step.getMethodName()
-                        )
+        DecisionResult decision =
+                StepDecisionEngine.decide(
+                        request.getSteps(),
+                        repoSteps
                 );
 
-            } else {
+        List<ReuseView> reusedViews =
+                decision.getReused().stream()
+                        .map(r -> {
+                            StepDefinition s = r.getStep();
+                            return new ReuseView(
+                                    s.getKeyword(),
+                                    s.getStepText(),
+                                    s.getMethodName(),
+                                    s.getFilePath(),
+                                    String.valueOf(Math.round(r.getConfidence() * 100))
+                            );
+                        })
+                        .toList();
 
-                generatedSteps.add(
-                        new GenerateView(
-                                manualStep,
-                                toPercent(decision.getConfidence())
-                        )
-                );
-            }
-        }
+        List<GenerateView> generatedViews =
+                decision.getGenerated().stream()
+                        .map(s -> new GenerateView(s, "PENDING"))
+                        .toList();
 
-        // 4️⃣ FINAL RESPONSE (MANDATORY RETURN)
         return TestPilotResponse.build(
-                request.getRequestId(),
-                request.getTestName(),
                 "COMPLETED",
-                reusedSteps,
-                generatedSteps,
-                List.of("Analysis completed successfully")
+                "Analysis completed successfully",
+                request.getTestName(),
+                reusedViews,
+                generatedViews,
+                List.of()
         );
     }
 
-    /**
-     * Converts confidence score to percentage string.
-     */
-    private String toPercent(double confidence) {
-        return Math.round(confidence * 100) + "%";
+    private ReuseView toReuseView(MatchResult result) {
+
+        StepDefinition step = result.getStep();
+
+        return new ReuseView(
+                step.getKeyword(),                 // Given / When / Then / And
+                step.getStepText(),                // Step text
+                step.getMethodName(),              // Java method
+                step.getFilePath(),                // Repo path
+                result.getConfidence() + "%"        // Confidence
+        );
     }
-}
+
+    private GenerateView toGenerateView(String manualStep) {
+            return new GenerateView(
+                    manualStep,
+                    "PENDING"
+            );
+        }
+
+    }

@@ -1,28 +1,20 @@
 package com.testpilot.ai.store;
 
 import com.testpilot.ai.model.StepDefinition;
+import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
+@Component
 public class StepStore {
 
-    private final List<StepDefinition> steps = new ArrayList<>();
+    private final RemoteStepStore remoteStepStore;
 
-    public void add(StepDefinition step) {
-        steps.add(step);
+    public StepStore(RemoteStepStore remoteStepStore) {
+        this.remoteStepStore = remoteStepStore;
     }
 
-    public List<StepDefinition> getAll() {
-        return Collections.unmodifiableList(steps);
-    }
-
-    public boolean isEmpty() {
-        return steps.isEmpty();
-    }
-
-    public int size() {
-        return steps.size();
+    public List<StepDefinition> getAllSteps() {
+        return remoteStepStore.loadSteps();
     }
 }

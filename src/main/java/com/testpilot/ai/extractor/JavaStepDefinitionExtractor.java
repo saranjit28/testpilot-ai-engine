@@ -1,6 +1,6 @@
 package com.testpilot.ai.extractor;
 
-import com.testpilot.ai.engine.KeywordExtractor;
+import com.testpilot.ai.extractor.KeywordExtractor;
 import com.testpilot.ai.model.StepDefinition;
 
 import java.io.IOException;
@@ -9,7 +9,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.testpilot.ai.engine.TextNormalizer.normalize;
+import com.testpilot.ai.util.StepTextNormalizer;
 
 public class JavaStepDefinitionExtractor {
 
@@ -71,7 +71,7 @@ public class JavaStepDefinitionExtractor {
                         steps.add(
                                 new StepDefinition(
                                         stepText,
-                                        normalize(stepText),
+                                        StepTextNormalizer.normalize(stepText),
                                         relativePath,
                                         methodName,
                                         KeywordExtractor.extract(stepText)

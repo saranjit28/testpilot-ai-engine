@@ -1,9 +1,10 @@
 package com.testpilot.ai.generator;
 
-import com.testpilot.ai.engine.KeywordExtractor;
-import com.testpilot.ai.engine.TextNormalizer;
+import com.testpilot.ai.extractor.KeywordExtractor;
+import com.testpilot.ai.util.StepTextNormalizer;
 import com.testpilot.ai.page.PageInferenceResult;
 import com.testpilot.ai.page.PageObjectInferencer;
+
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -74,8 +75,7 @@ public class JavaStepSkeletonGenerator {
 
     private static String toCamel(String text) {
 
-        String normalized =
-                TextNormalizer.normalize(text);
+        String normalized = StepTextNormalizer.normalize(text);
 
         String[] parts = normalized.split(" ");
         StringBuilder sb = new StringBuilder();
