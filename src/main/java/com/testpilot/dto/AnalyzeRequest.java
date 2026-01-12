@@ -6,31 +6,34 @@ public class AnalyzeRequest {
 
     private String requestId;
     private String testName;
+    private List<String> steps;
 
-    // Manual steps coming from Quick Script UI
-    private List<String> manualTestCase;
-
-    /* ---------- Controller-facing ---------- */
+    // ✅ REQUIRED by Jackson
+    public AnalyzeRequest() {
+    }
 
     public String getRequestId() {
         return requestId;
+    }
+
+    public void setRequestId(String requestId) {
+        this.requestId = requestId;
     }
 
     public String getTestName() {
         return testName;
     }
 
-    public List<String> getManualTestCase() {
-        return manualTestCase;
+    public void setTestName(String testName) {
+        this.testName = testName;
     }
 
-    /* ---------- Service / Engine-facing ---------- */
-
-    /**
-     * Alias for internal processing.
-     * Both return the same manual steps.
-     */
     public List<String> getSteps() {
-        return manualTestCase;
+        return steps;
+    }
+
+    // ✅ THIS WAS MISSING — ROOT CAUSE
+    public void setSteps(List<String> steps) {
+        this.steps = steps;
     }
 }

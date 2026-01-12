@@ -1,6 +1,5 @@
 package com.testpilot.ai.page;
-
-import com.testpilot.ai.engine.TextNormalizer;
+import com.testpilot.ai.util.StepTextNormalizer;
 
 public class PageObjectMethodGenerator {
 
@@ -45,8 +44,8 @@ public class PageObjectMethodGenerator {
 
     private static String toCamel(String text) {
 
-        String normalized =
-                TextNormalizer.normalize(text);
+        String normalized = StepTextNormalizer.normalize(text);
+
 
         String[] parts = normalized.split(" ");
         StringBuilder sb = new StringBuilder();
@@ -58,6 +57,37 @@ public class PageObjectMethodGenerator {
 
         return sb.toString();
     }
+
+    public static String extractMethodName(
+            String stepText,
+            String pageName
+    ) {
+        return "handle" + stepText
+                .replaceAll("[^a-zA-Z]", " ")
+                .trim()
+                .replaceAll("\\s+", "")
+                .replaceFirst("^.",
+                        String.valueOf(
+                                Character.toUpperCase(
+                                        stepText.charAt(0)
+                                )
+                        )
+                );
+    }
+
+    public static String generateMethod(
+            String stepText,
+            String pageName
+    ) {
+        return """
+            public void %s() {
+                throw new RuntimeException("Implementation required");
+            }
+            """.formatted(
+                extractMethodName(stepText, pageName)
+        );
+    }
+
 
     public static String extractMethodName(
             String stepText,

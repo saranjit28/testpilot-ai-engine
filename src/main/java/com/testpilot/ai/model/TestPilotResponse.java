@@ -35,23 +35,22 @@ public class TestPilotResponse {
     }
 
     public static TestPilotResponse build(
-            String requestId,
-            String testName,
             String status,
+            String message,
+            String testName,
             List<ReuseView> reusedSteps,
             List<GenerateView> generatedSteps,
             List<String> messages
     ) {
 
-        SummaryView summary =
-                new SummaryView(
-                        reusedSteps.size() + generatedSteps.size(),
-                        reusedSteps.size(),
-                        generatedSteps.size()
-                );
+        SummaryView summary = new SummaryView(
+                reusedSteps.size() + generatedSteps.size(),
+                reusedSteps.size(),
+                generatedSteps.size()
+        );
 
         return new TestPilotResponse(
-                requestId,
+                null,               // requestId (optional / future use)
                 testName,
                 status,
                 summary,

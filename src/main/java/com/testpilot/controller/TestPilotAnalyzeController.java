@@ -1,12 +1,12 @@
 package com.testpilot.controller;
 
-import com.testpilot.ai.model.TestPilotResponse;
-import org.springframework.web.bind.annotation.*;
 import com.testpilot.dto.AnalyzeRequest;
+import com.testpilot.ai.model.TestPilotResponse;
 import com.testpilot.service.AnalyzeService;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/testpilot")
+@RequestMapping("/testpilot")
 public class TestPilotAnalyzeController {
 
     private final AnalyzeService analyzeService;
@@ -15,9 +15,10 @@ public class TestPilotAnalyzeController {
         this.analyzeService = analyzeService;
     }
 
-    @PostMapping("/api/testpilot/analyze")
-    public TestPilotResponse analyze(@RequestBody AnalyzeRequest request) {
+    @PostMapping("/analyze")
+    public TestPilotResponse analyze(
+            @RequestBody AnalyzeRequest request
+    ) {
         return analyzeService.analyzeManualTestCase(request);
     }
-
 }

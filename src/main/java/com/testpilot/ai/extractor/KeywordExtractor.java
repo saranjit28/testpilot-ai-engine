@@ -1,4 +1,6 @@
-package com.testpilot.ai.engine;
+package com.testpilot.ai.extractor;
+
+import com.testpilot.ai.util.StepTextNormalizer;
 
 import java.util.Arrays;
 import java.util.Set;
@@ -17,7 +19,8 @@ public class KeywordExtractor {
         }
 
         return Arrays.stream(
-                        TextNormalizer.normalize(step).split(" ")
+                        StepTextNormalizer.normalize(step)
+                                .split(" ")
                 )
                 .filter(word -> word.length() > 2)
                 .filter(word -> !STOP_WORDS.contains(word))
