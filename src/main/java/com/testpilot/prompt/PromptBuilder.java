@@ -10,7 +10,6 @@ public class PromptBuilder {
     ) {
 
         return """
-You are a senior Java automation engineer.
 
 Manual Test Step:
 %s

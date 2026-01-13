@@ -9,8 +9,6 @@ public class SeleniumPromptBuilder {
     ) {
 
         return """
-                You are a senior Java Selenium automation engineer.
-
                 Generate ONLY the Java method body for the following PageObject method.
 
                 Rules:

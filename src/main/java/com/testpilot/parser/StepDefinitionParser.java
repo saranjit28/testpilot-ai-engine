@@ -2,54 +2,130 @@ package com.testpilot.parser;
 
 import com.testpilot.ai.model.StepDefinition;
 import com.testpilot.ai.extractor.KeywordExtractor;
-import com.testpilot.ai.util.StepTextNormalizer;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class StepDefinitionParser {
 
+    /**
+     * Matches:
+     *  @Given("I do something")
+     *  @When("^I login to \"([^\"]*)\" app$")
+     *  @Then("^I (see|do not see) \"([^\"]*)\"$")
+     */
     private static final Pattern STEP_PATTERN =
-            Pattern.compile("@(Given|When|Then|And|But)\\(\"([^\"]+)\"\\)");
+            Pattern.compile(
+                    "@(Given|When|Then|And)\\(\"(.*?)\"\\)",
+                    Pattern.DOTALL
+            );
 
-    public static List<StepDefinition> parse(String fileContent, String filePath) {
+    public static List<StepDefinition> parse(
+            String javaSource,
+            String filePath
+    ) {
 
         List<StepDefinition> steps = new ArrayList<>();
-        Matcher matcher = STEP_PATTERN.matcher(fileContent);
+
+        Matcher matcher = STEP_PATTERN.matcher(javaSource);
 
         while (matcher.find()) {
 
             String keyword = matcher.group(1);
-            String rawAnnotation = matcher.group(2);
+            String rawExpression = matcher.group(2);
 
-            String cleanStep =
-                    rawAnnotation
-                            .replaceAll("\\^|\\$", "")
-                            .replaceAll("\"[^\"]*\"", "{string}");
+            // 1️⃣ Normalize regex → cucumber style
+            String normalized = normalize(rawExpression);
 
-            String matchText =
-                    StepTextNormalizer.normalize(cleanStep);
+            // 2️⃣ Expand (a|b) patterns
+            List<String> expanded = expandAlternatives(normalized);
 
-            steps.add(new StepDefinition(
-                    keyword,
-                    cleanStep,
-                    matchText,
-                    extractMethodName(fileContent, matcher.end()),
-                    filePath,
-                    KeywordExtractor.extract(matchText)
-            ));
+            // 3️⃣ Extract method name
+            String methodName =
+                    extractMethodName(javaSource, matcher.end());
+
+            for (String stepText : expanded) {
+
+                Set<String> keywords =
+                        KeywordExtractor.extract(stepText);
+
+                steps.add(
+                        new StepDefinition(
+                                keyword,
+                                stepText,
+                                stepText.toLowerCase(),
+                                methodName,
+                                filePath,
+                                keywords
+                        )
+                );
+            }
         }
 
         return steps;
     }
 
-    private static String extractMethodName(String content, int index) {
+    // ---------------- HELPERS ----------------
+
+    private static String normalize(String expr) {
+
+        // Remove regex anchors
+        expr = expr.replaceAll("^\\^", "")
+                .replaceAll("\\$$", "");
+
+        // Replace regex string captures with {string}
+        expr = expr.replaceAll("\\\\\\\"\\(\\[\\^\\\\\\\"\\]\\*\\)\\\\\\\"", "{string}");
+        expr = expr.replaceAll("\\(\\[\\^\\\\\\\"\\]\\*\\)", "{string}");
+        expr = expr.replaceAll("\\(\\.\\*\\)", "{string}");
+
+        // Unescape quotes
+        expr = expr.replace("\\\"", "");
+
+        return expr.trim();
+    }
+
+    private static List<String> expandAlternatives(String expr) {
+
+        // Example: I (see|do not see) X
+        Pattern altPattern = Pattern.compile("\\(([^()]+\\|[^()]+)\\)");
+        Matcher matcher = altPattern.matcher(expr);
+
+        if (!matcher.find()) {
+            return List.of(expr);
+        }
+
+        String[] options = matcher.group(1).split("\\|");
+
+        List<String> results = new ArrayList<>();
+
+        for (String option : options) {
+            results.add(
+                    expr.replace(
+                            "(" + matcher.group(1) + ")",
+                            option.trim()
+                    )
+            );
+        }
+
+        return results;
+    }
+
+    private static String extractMethodName(
+            String source,
+            int fromIndex
+    ) {
+
         Pattern methodPattern =
-                Pattern.compile("void\\s+(\\w+)\\s*\\(");
-        Matcher m =
-                methodPattern.matcher(content.substring(index));
-        return m.find() ? m.group(1) : "unknownMethod";
+                Pattern.compile("public\\s+void\\s+(\\w+)\\s*\\(");
+
+        Matcher matcher =
+                methodPattern.matcher(source.substring(fromIndex));
+
+        if (matcher.find()) {
+            return matcher.group(1);
+        }
+
+        return "UNKNOWN_METHOD";
     }
 }
